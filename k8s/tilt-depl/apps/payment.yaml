@@ -47,7 +47,7 @@ spec:
       serviceAccountName: payment-sa
       containers:
         - name: payment-app
-          image: yuyatinnefeld/microservice-payment-app:1.0.0
+          image: payment-tilt-v1
           ports:
             - containerPort: 8888
           env:

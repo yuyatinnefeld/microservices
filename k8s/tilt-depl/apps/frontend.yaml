@@ -47,7 +47,7 @@ spec:
       serviceAccountName: frontend-sa
       containers:
         - name: frontend-app
-          image: frontend
+          image: frontend-tilt
           ports:
             - containerPort: 5000
           env:
@@ -56,7 +56,7 @@ spec:
             - name: VERSION
               value: "1.0.0"
             - name: ENV
-              value: "DEV"
+              value: "DEV_K8S"
             - name: PLATFORM
               value: "K8S"
             - name: MY_POD_NAME

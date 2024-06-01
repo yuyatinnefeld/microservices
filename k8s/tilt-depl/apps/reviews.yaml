@@ -28,7 +28,7 @@ metadata:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: reviews-v1
+  name: reviews-tilt-v1-depl
   labels:
     app: reviews-app
     version: v1
@@ -48,7 +48,7 @@ spec:
       serviceAccountName: reviews-sa
       containers:
         - name: reviews-app
-          image: yuyatinnefeld/microservice-reviews-app:1.0.0
+          image: reviews-tilt-v1
           ports:
             - containerPort: 9999
           env:
@@ -110,7 +110,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: reviews-v3
+  name: reviews-v3s
   labels:
     app: reviews-app
     version: v3

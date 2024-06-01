@@ -1,6 +1,7 @@
 FROM python:3.10-slim
 
 ENV PYTHONUNBUFFERED True
+ENV ENV=DEV_DOCKER
 WORKDIR /code
 COPY ./app /code/app
 COPY ./requirements.txt /code/requirements.txt
