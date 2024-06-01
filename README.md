@@ -21,6 +21,12 @@ Ensure you have the following installed:
 ### Installation
 
 1. **Clone the repository:**
-   ```sh
-   git clone https://github.com/yourusername/demo-microservices.git
-   cd demo-microservices
+```bash
+git clone https://github.com/yourusername/demo-microservices.git
+cd demo-microservices
+```
+
+2. **Deploy Apps with Tilt File:**
+```bash
+tilt up
+```
