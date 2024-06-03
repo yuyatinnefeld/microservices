@@ -10,15 +10,63 @@ vault status
 
 ## Create Secrets
 ```bash
-# write demo secrets
-vault kv put -mount=secret username user_1=jimmy user_2=takashi
-vault kv put -mount=secret password user_1=hello user_2=world
+# write  ademo secret
+vault kv put secret/devwebapp/config username='yuya' password='salsa'
 
-# read demo secrets
-vault kv get -mount=secret username
-vault kv get -mount=secret password
+# read the demo secret
+vault kv get -mount=secret devwebapp/config
+vault kv get -format=json secret/devwebapp/config | jq ".data.data"
 
-# you can create secrets also in the vault UI
-kubectl port-forward vault-0 8200:8200
-open localhost:8200
+# check secret in ui
+open http://127.0.0.1:8200
+
+# start k8s dashbaord 
+minikube dashboard --url
+```
+
+## Determine the Vault address
+```bash
+minikube ssh
+
+# retrieve the value of the minikube host 
+cat /etc/resolv.conf
+ip addr show dev eth0
+
+# retrieve the status of the Vault server
+echo 192.168.64.1 | xargs -I{} curl -s http://{}:8200/v1/sys/seal-status
+exit
+
+EXTERNAL_VAULT_ADDR=192.168.64.1
+```
+
+## Deploy app with hard-coded Vault address
+
+```bash
+# create a service account
+kubectl create sa internal-app
+
+# create a demo pod
+cat > devwebapp.yaml <<EOF
+apiVersion: v1
+kind: Pod
+metadata:
+  name: devwebapp
+  labels:
+    app: devwebapp
+spec:
+  serviceAccountName: internal-app
+  containers:
+    - name: app
+      image: burtlo/devwebapp-ruby:k8s
+      env:
+      - name: VAULT_ADDR
+        value: "http://$EXTERNAL_VAULT_ADDR:8200"
+      - name: VAULT_TOKEN
+        value: root
+EOF
+
+kubectl apply -f devwebapp.yaml
+
+# Request content served at localhost:8080
+kubectl exec devwebapp -- curl -s localhost:8080 ; echo
 ```
