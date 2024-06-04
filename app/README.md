@@ -1,5 +1,16 @@
 # Push Docker image into Docker Repo
 
+## Details App
+```bash
+cd microservices/app/details
+
+REPO_NAME="yuyatinnefeld"
+IMAGE_NAME="microservice-details-app:1.0.0"
+docker build -t $REPO_NAME/$IMAGE_NAME .
+docker run -it -p 7777:7777 $REPO_NAME/$IMAGE_NAME
+docker image push $REPO_NAME/$IMAGE_NAME
+```
+
 ## Payment App
 ```bash
 cd microservices/app/payment
@@ -32,14 +43,14 @@ docker run -p 9999:9999 -t $REPO_NAME/$IMAGE_NAME
 docker image push $REPO_NAME/$IMAGE_NAME
 ```
 
-## Details App
+## Vault App
 ```bash
-cd microservices/app/details
+cd microservices/app/vault
 
 REPO_NAME="yuyatinnefeld"
-IMAGE_NAME="microservice-details-app:1.0.0"
+IMAGE_NAME="microservice-vault-app:1.0.0"
 docker build -t $REPO_NAME/$IMAGE_NAME .
-docker run -it -p 7777:7777 $REPO_NAME/$IMAGE_NAME
+docker run -it -p 8899:8899 $REPO_NAME/$IMAGE_NAME
 docker image push $REPO_NAME/$IMAGE_NAME
 ```
 

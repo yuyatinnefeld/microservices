@@ -11,11 +11,11 @@ vault status
 ## Create Secrets
 ```bash
 # write  ademo secret
-vault kv put secret/devwebapp/config username='yuya' password='salsa'
+vault kv put secret/yuya_password/config username='yuya' password='salsa'
 
 # read the demo secret
-vault kv get -mount=secret devwebapp/config
-vault kv get -format=json secret/devwebapp/config | jq ".data.data"
+vault kv get -mount=secret yuya_password/config
+vault kv get -format=json secret/yuya_password/config | jq ".data.data"
 
 # check secret in ui
 open http://127.0.0.1:8200
@@ -42,31 +42,10 @@ EXTERNAL_VAULT_ADDR=192.168.64.1
 ## Deploy app with hard-coded Vault address
 
 ```bash
-# create a service account
-kubectl create sa internal-app
+# deploy with tilt
+cd vault
+tilt up
 
-# create a demo pod
-cat > devwebapp.yaml <<EOF
-apiVersion: v1
-kind: Pod
-metadata:
-  name: devwebapp
-  labels:
-    app: devwebapp
-spec:
-  serviceAccountName: internal-app
-  containers:
-    - name: app
-      image: burtlo/devwebapp-ruby:k8s
-      env:
-      - name: VAULT_ADDR
-        value: "http://$EXTERNAL_VAULT_ADDR:8200"
-      - name: VAULT_TOKEN
-        value: root
-EOF
-
-kubectl apply -f devwebapp.yaml
-
-# Request content served at localhost:8080
-kubectl exec devwebapp -- curl -s localhost:8080 ; echo
+# deploy with k8s
+kubectl apply -f k8s/service-mesh/vault/vault.yaml
 ```

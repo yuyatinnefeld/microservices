@@ -9,10 +9,12 @@ import (
 )
 
 type Response struct {
-	AppName    string `json:"appName"`
-	Language   string `json:"language"`
-	Version    string `json:"version"`
-	Message    string `json:"message"`
+	AppName   string `json:"appName"`
+	Language  string `json:"language"`
+	Version   string `json:"version"`
+	Message   string `json:"message"`
+	Username  string `json:"username"`
+	Password  string `json:"password"`
 }
 
 func setEnvOrDefault(envName string, defaultValue string) string {
@@ -67,13 +69,15 @@ func fetchAPIResource(w http.ResponseWriter, r *http.Request) {
 	log.Println("###### VALIDATE RESPONSE STATUS ###### ")
 
 	if resp.StatusCode != http.StatusOK {
-		log.Println("ERROR: StatusCode =", resp.StatusCode)
+		log.Println("ERROR: StatusCode = ", resp.StatusCode)
 	}else{
-		log.Println("SUCCESS: StatusCode =", resp.StatusCode)
+		log.Println("SUCCESS: StatusCode = ", resp.StatusCode)
 	}
 
 	log.Println("###### EXTRACT SECRETS FROM RESPONSE ###### ")
 	var content map[string]interface{}
+
+	log.Println(resp.Body)
 
 	err = json.NewDecoder(resp.Body).Decode(&content)
 	if err != nil {
@@ -81,19 +85,32 @@ func fetchAPIResource(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := content["data"].(map[string]interface{})
+	raw_data := content["data"].(map[string]interface{})
+	log.Println("RAW DATA: ", raw_data)
+	vSecret, ok := raw_data["data"].(map[string]interface{})
 
-	log.Println("RAW DATA: ", data)
-
- 	for key, value := range data {
-		log.Println(key, value)
+	username, ok := vSecret["username"].(string)
+	if !ok {
+		log.Println("Username not found or not a string")
+		return
 	}
+
+	password, ok := vSecret["password"].(string)
+	if !ok {
+		log.Println("Password not found or not a string")
+		return
+	}
+
+	log.Println("Username: ", username)
+	log.Println("Password: ", password)
 
 	response := Response{
 		AppName:  appName,
 		Language: language,
 		Version:  version,
 		Message:  message,
+		Username: username,
+		Password: password,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
