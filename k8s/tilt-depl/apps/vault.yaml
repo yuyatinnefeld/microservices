@@ -1,0 +1,62 @@
+#################################################################################################
+# vault
+#################################################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: vault-service
+  labels:
+    app: vault
+    service: vault
+spec:
+  selector:
+    app:  vault-app
+  ports:
+    - port: 8899
+      targetPort: 8899
+      name: http
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vault-sa
+---
+#################################################################################################
+# deployment v1
+#################################################################################################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vault-tilt-depl
+  labels:
+    app: vault-app
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app:  vault-app
+      version: v1
+  template:
+    metadata:
+      name: vault
+      labels:
+        app:  vault-app
+        version: v1
+    spec:
+      serviceAccountName: vault-sa
+      containers:
+        - name: vault-app
+          image: vault-tilt-img
+          ports:
+            - containerPort: 8899
+          env:
+            - name: MESSAGE
+              value: "MY_K8S_MESSAGE"
+            - name: VERSION
+              value: "1.0.0"
+            - name: VAULT_ADDR
+              value: "http://192.168.64.1:8200"
+            - name: VAULT_TOKEN
+              value: "root"
