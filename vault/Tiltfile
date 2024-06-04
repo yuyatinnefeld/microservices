@@ -1,0 +1,4 @@
+## VAULT APP
+docker_build('vault-tilt-img', '../app/vault-secret')
+k8s_yaml('../k8s/tilt-depl/apps/vault.yaml')
+k8s_resource('vault-tilt-depl', port_forwards='8899:8899')
