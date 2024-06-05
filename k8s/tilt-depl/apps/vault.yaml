@@ -60,3 +60,5 @@ spec:
               value: "http://192.168.64.1:8200"
             - name: VAULT_TOKEN
               value: "root"
+            - name: SECRETS_PATH
+              value: "/v1/secret/data/yuya_password/config"

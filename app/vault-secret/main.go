@@ -24,6 +24,66 @@ func setEnvOrDefault(envName string, defaultValue string) string {
 	return defaultValue
 }
 
+func retrieveVaultSecrets(vURL, vToken, secretsPath string) (string, string, error) {
+
+	url := fmt.Sprintf("%s%s", vURL, secretsPath)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	
+	if err != nil {
+		return "", "", err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Vault-Token", vToken)
+	log.Println("✅ CREATE VAULT REQUEST ✅")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+
+	if err != nil {
+		return "", "", err
+	}
+
+	defer resp.Body.Close()
+	log.Println("✅ FETCH VAULT RESPONSE ✅")
+
+	if resp.StatusCode != http.StatusOK {
+		return "", "", fmt.Errorf("failed to fetch secrets: status code %d", resp.StatusCode)
+	}
+
+	log.Println("✅ VALIDATE RESPONSE STATUS ✅")
+
+	var content map[string]interface{}
+	err = json.NewDecoder(resp.Body).Decode(&content)
+	if err != nil {
+		return "", "", err
+	}
+
+	rawData, ok := content["data"].(map[string]interface{})
+	if !ok {
+		return "", "", fmt.Errorf("invalid response structure")
+	}
+
+	vSecret, ok := rawData["data"].(map[string]interface{})
+	if !ok {
+		return "", "", fmt.Errorf("invalid secret structure")
+	}
+
+	username, ok := vSecret["username"].(string)
+	if !ok {
+		return "", "", fmt.Errorf("username not found or not a string")
+	}
+
+	password, ok := vSecret["password"].(string)
+	if !ok {
+		return "", "", fmt.Errorf("password not found or not a string")
+	}
+
+	log.Println("✅ EXTRACT SECRETS FROM RESPONSE ✅")
+
+	return username, password, nil
+}
+
 func fetchAPIResource(w http.ResponseWriter, r *http.Request) {
 	log.Println("###### 🚀 START APPLICATION 🚀 ###### ")
 
@@ -31,78 +91,27 @@ func fetchAPIResource(w http.ResponseWriter, r *http.Request) {
 	language := "golang"
 	version := setEnvOrDefault("VERSION", "0.0.0")
 	message := setEnvOrDefault("MESSAGE", "MESSAGE_NOT_DEFINED")
-	vURL := setEnvOrDefault("VAULT_ADDR", "ENV_NOT_DEFINED")
-	vToken := setEnvOrDefault("VAULT_TOKEN", "PODID_NOT_DEFINED")
+	vURL := setEnvOrDefault("VAULT_ADDR", "http://192.168.64.1:8200")
+	vToken := setEnvOrDefault("VAULT_TOKEN", "root")
+	secretsPath := setEnvOrDefault("SECRETS_PATH", "/v1/secret/data/yuya_password/config")
 
-	log.Println("###### VALIDATE ENV VARIABLES ######")
+	log.Println("✅ VALIDATE ENV VARIABLES ✅")
 	log.Println("appName: ", appName)
 	log.Println("language: ", language)
 	log.Println("version: ", version)
 	log.Println("message: ", message)
 	log.Println("vURL: ", vURL)
 	log.Println("vToken: ", vToken)
+	log.Println("secretsPath: ", secretsPath)
 
-	log.Println("###### CREATE VAULT REQUEST ###### ")
-	secretsPath := "/v1/secret/data/yuya_password/config"
-	log.Println("vToken: ", secretsPath)
+	username, password, err := retrieveVaultSecrets(vURL, vToken, secretsPath)
 
-	url := fmt.Sprintf("%s%s", vURL, secretsPath)
-	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
+		log.Println("❌ Error ❌")
+		log.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-Vault-Token", vToken)
-
-	log.Println("###### FETCH VAULT RESPONSE ###### ")
-	client := &http.Client{}
-	resp, err := client.Do(req)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	defer resp.Body.Close()
-
-	log.Println("###### VALIDATE RESPONSE STATUS ###### ")
-
-	if resp.StatusCode != http.StatusOK {
-		log.Println("ERROR: StatusCode = ", resp.StatusCode)
-	}else{
-		log.Println("SUCCESS: StatusCode = ", resp.StatusCode)
-	}
-
-	log.Println("###### EXTRACT SECRETS FROM RESPONSE ###### ")
-	var content map[string]interface{}
-
-	log.Println(resp.Body)
-
-	err = json.NewDecoder(resp.Body).Decode(&content)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	raw_data := content["data"].(map[string]interface{})
-	log.Println("RAW DATA: ", raw_data)
-	vSecret, ok := raw_data["data"].(map[string]interface{})
-
-	username, ok := vSecret["username"].(string)
-	if !ok {
-		log.Println("Username not found or not a string")
-		return
-	}
-
-	password, ok := vSecret["password"].(string)
-	if !ok {
-		log.Println("Password not found or not a string")
-		return
-	}
-
-	log.Println("Username: ", username)
-	log.Println("Password: ", password)
 
 	response := Response{
 		AppName:  appName,
@@ -116,12 +125,11 @@ func fetchAPIResource(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 	log.Println("###### 🍻 FINISH APPLICATION 🍻 ###### ")
-
 }
 
 func main() {
 	http.HandleFunc("/", fetchAPIResource)
 	port := 8899
 	fmt.Printf("Serving on port %d..\n", port)
-	log.Fatal(http.ListenAndServe(":8899", nil))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), nil))
 }

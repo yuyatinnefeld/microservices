@@ -11,7 +11,7 @@ vault status
 ## Create Secrets
 ```bash
 # write  ademo secret
-vault kv put secret/yuya_password/config username='yuya' password='salsa'
+vault kv put secret/yuya_password/config username='mango' password='wave'
 
 # read the demo secret
 vault kv get -mount=secret yuya_password/config
