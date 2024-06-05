@@ -6,10 +6,11 @@ This repository provides a simple demo of microservices to be used for learning 
 ## Architecture
 ![Microservice Architecture](/images/microservice-architecture.png)
 
-The architecture consists of a Python frontend application that interacts with three services:
+The architecture consists of a Python frontend application that interacts with four services:
 - **Details Service:** Written in Java.
 - **Reviews Service:** Written in Golang.
 - **Payment Service:** Written in Golang.
+- **Vault Secret Service:** Written in Golang, retrieves username and password from the Vault secret engine.
 
 ## Getting Started
 
