@@ -129,7 +129,10 @@ func fetchAPIResource(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	http.HandleFunc("/", fetchAPIResource)
-	port := 8899
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8899"
+	}
 	fmt.Printf("Serving on port %d..\n", port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), nil))
 }
