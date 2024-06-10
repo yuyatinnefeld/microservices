@@ -49,3 +49,11 @@ tilt up
 # deploy with k8s
 kubectl apply -f k8s/service-mesh/vault/vault.yaml
 ```
+
+## Verify 
+```bash
+# see the website
+open localhost:8899
+# change the secret
+vault kv put secret/yuya_password/config username='mango' password='aceno'
+```
