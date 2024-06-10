@@ -1,9 +1,6 @@
 ## VAULT APP
 sync_src = sync('../app/vault-secret', '/go-app')
 docker_build('vault-tilt-img', '../app/vault-secret', live_update=[sync_src], entrypoint='./server', build_args={'ENV': 'DEV_TILT'})
-
-
-#docker_build('vault-tilt-img', '../app/vault-secret')
 k8s_yaml('../k8s/tilt-depl/apps/vault.yaml')
 k8s_resource('vault-tilt-depl', port_forwards='8899:8899')
 
