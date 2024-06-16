@@ -1,36 +1,65 @@
-
 ##################################################################################################
-# details service
+# details
 ##################################################################################################
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: details-app-deploy
-  labels:
-    app: details-app
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app:  details-app
-  template:
-    metadata:
-      labels:
-        app:  details-app
-    spec:
-      containers:
-        - name: details-app
-          image: yuyatinnefeld/microservice-details-app:1.0.0
----
 apiVersion: v1
 kind: Service
 metadata:
   name: details-service
+  labels:
+    app: details
+    service: details
 spec:
   selector:
     app:  details-app
   ports:
     - port: 7777
       targetPort: 7777
-      name: http-details
+      name: http
   type: ClusterIP
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: details-sa
+  labels:
+    account: details-sa
+---
+#################################################################################################
+# deployment v1
+##################################################################################################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: details-v1
+  labels:
+    app: details-app
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app:  details-app
+      version: v1
+  template:
+    metadata:
+      labels:
+        app:  details-app
+        version: v1
+    spec:
+      serviceAccountName: details-sa
+      containers:
+        - name: details-app
+          image: yuyatinnefeld/microservice-details-app:1.0.0
+          ports:
+            - containerPort: 7777
+          env:
+            - name: MESSAGE
+              value: "..."
+            - name: VERSION
+              value: "1.0.0"
+            - name: ENV
+              value: "DEV"
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
