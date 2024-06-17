@@ -1,5 +1,6 @@
 stages:
   - build
+  - deploy
 
 build_image:
   stage: build
@@ -19,3 +20,16 @@ build_image:
     IMAGE_NAME: "microservice-details-app"
     IMAGE_TAG: "1.0.0"
 
+
+deploy_k8s_apps:
+  stage: deploy
+  image:
+    name: bitnami/kubectl:latest
+    entrypoint: ['']
+  script:
+    - kubectl config use-context $GITLAB_GROUP_ID/$GITLAB_PROJECT_ID:$GITLAB_K8S_AGENT_NAME
+    - kubectl get pods
+  variables:
+    GITLAB_GROUP_ID: "k8s1940325"
+    GITLAB_PROJECT_ID: "k8s-connection"
+    GITLAB_K8S_AGENT_NAME: k8s-connection
