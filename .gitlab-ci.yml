@@ -1,5 +1,6 @@
 stages:
   - build
+  - test
   - deploy
 
 build_image:
@@ -20,6 +21,18 @@ build_image:
     IMAGE_NAME: "microservice-details-app"
     IMAGE_TAG: "1.0.0"
 
+static_analysis_kubesec:
+  stage: test
+  image: docker
+  services:
+    - name: docker:dind
+  before_script:
+    - cd $WORKING_DIR
+  script:
+    - docker run -i kubesec/kubesec:v2 scan /dev/stdin < simple.yaml
+    - docker run -i kubesec/kubesec:v2 scan /dev/stdin < details.yaml
+  variables:
+    WORKING_DIR: cicd/gitlab/depl
 
 deploy_k8s_apps:
   stage: deploy
