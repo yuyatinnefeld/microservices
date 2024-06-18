@@ -29,9 +29,6 @@ static_analysis_kubesec:
   before_script:
     - cd $WORKING_DIR
   script:
-    - echo "option 1 - curl" 
-    - curl -sSX POST --data-binary @simple.yaml -H 'Content-Type: application/json' https://v2.kubesec.io/scan
-    - echo "option 2 - docker" 
     - docker run -i kubesec/kubesec:v2 scan /dev/stdin < simple.yaml
   variables:
     WORKING_DIR: cicd/gitlab/depl
