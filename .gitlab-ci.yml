@@ -1,6 +1,7 @@
 stages:
   - build
-  - test
+  - test_docker_img
+  - test_k8s
   - deploy
 
 build_image:
@@ -22,17 +23,16 @@ build_image:
     IMAGE_TAG: "1.0.0"
 
 trivy:
-  stage: test
+  stage: test_docker_img
   script:
     - curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b trivy v0.18.3
-    - cd trivy
-    - ./trivy
-
+    - ./trivy/trivy filesystem  $WORKING_DIR/details/Dockerfile
+    - ./trivy/trivy filesystem  $WORKING_DIR/payment/Dockerfile
   variables:
-    WORKING_DIR: cicd/gitlab/depl
+    WORKING_DIR: app
 
 kubesec:
-  stage: test
+  stage: test_k8s
   image: docker
   services:
     - name: docker:dind
@@ -43,7 +43,7 @@ kubesec:
   allow_failure: true
 
 kubebench:
-  stage: test
+  stage: test_k8s
   image: docker
   services:
     - name: docker:dind
