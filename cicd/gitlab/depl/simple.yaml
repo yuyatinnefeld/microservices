@@ -34,7 +34,12 @@ spec:
     metadata:
       labels:
         app: nginx
+      annotations:
+        container.apparmor.security.beta.kubernetes.io/nginx: runtime/default
+        container.seccomp.security.alpha.kubernetes.io/pod: runtime/default
     spec:
+      serviceAccountName: nginx-service-account
+      automountServiceAccountToken: false
       containers:
       - name: nginx
         image: nginx:1.14.2
