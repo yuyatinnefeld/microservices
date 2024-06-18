@@ -21,28 +21,28 @@ build_image:
     IMAGE_NAME: "microservice-details-app"
     IMAGE_TAG: "1.0.0"
 
-static_analysis_kubesec:
+conftest:
   stage: test
-  image: docker
-  services:
-    - name: docker:dind
-  before_script:
-    - cd $WORKING_DIR
+  image: openpolicyagent/conftest
   script:
-    - docker run -i kubesec/kubesec:v2 scan /dev/stdin < simple.yaml
+    - conftest test simple.yaml
+  variables:
+    WORKING_DIR: cicd/gitlab/depl
+
+kubesec:
+  stage: test
+  image: kubesec/kubesec
+  script:
+    - kubesec scan $WORKING_DIR/simple.yaml
   variables:
     WORKING_DIR: cicd/gitlab/depl
   allow_failure: true
 
 kubebench:
   stage: test
-  image: docker
-  services:
-    - name: docker:dind
-  before_script:
-    - cd $WORKING_DIR
+  image: aquasec/kube-bench
   script:
-    - echo "kubebench test"
+    - kubebench run --benchmark $WORKING_DIR/simple.yaml
   variables:
     WORKING_DIR: cicd/gitlab/depl
 
