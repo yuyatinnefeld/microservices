@@ -27,6 +27,7 @@ trivy:
     - curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b trivy v0.18.3
     - cd trivy
     - ./trivy
+
   variables:
     WORKING_DIR: cicd/gitlab/depl
 
