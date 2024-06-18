@@ -23,26 +23,32 @@ build_image:
 
 conftest:
   stage: test
-  image: openpolicyagent/conftest
+  image: docker
+  services:
+    - name: docker:dind
   script:
-    - conftest test simple.yaml
+    - docker run -i openpolicyagent/conftest test $WORKING_DIR/simple.yaml
   variables:
     WORKING_DIR: cicd/gitlab/depl
 
 kubesec:
   stage: test
-  image: kubesec/kubesec
+  image: docker
+  services:
+    - name: docker:dind
   script:
-    - kubesec scan $WORKING_DIR/simple.yaml
+    - docker run -i kubesec/kubesec:v2 scan /dev/stdin < $WORKING_DIR/simple.yaml
   variables:
     WORKING_DIR: cicd/gitlab/depl
   allow_failure: true
 
 kubebench:
   stage: test
-  image: aquasec/kube-bench
+  image: docker
+  services:
+    - name: docker:dind
   script:
-    - kubebench run --benchmark $WORKING_DIR/simple.yaml
+    - docker run -i aquasec/kube-bench run $WORKING_DIR/simple.yaml
   variables:
     WORKING_DIR: cicd/gitlab/depl
 
