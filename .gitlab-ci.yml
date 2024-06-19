@@ -1,8 +1,17 @@
 stages:
+  - test_image
   - build
-  - test_docker_img
   - test_k8s
   - deploy
+
+trivy:
+  stage: test_image
+  script:
+    - curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b trivy v0.18.3
+    - ./trivy/trivy filesystem  $WORKING_DIR/details/Dockerfile
+    - ./trivy/trivy filesystem  $WORKING_DIR/payment/Dockerfile
+  variables:
+    WORKING_DIR: app
 
 build_image:
   stage: build
@@ -21,15 +30,6 @@ build_image:
     GITLAB_PROJECT_ID: "k8s-microservices"
     IMAGE_NAME: "microservice-details-app"
     IMAGE_TAG: "1.0.0"
-
-trivy:
-  stage: test_docker_img
-  script:
-    - curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b trivy v0.18.3
-    - ./trivy/trivy filesystem  $WORKING_DIR/details/Dockerfile
-    - ./trivy/trivy filesystem  $WORKING_DIR/payment/Dockerfile
-  variables:
-    WORKING_DIR: app
 
 kubesec:
   stage: test_k8s
