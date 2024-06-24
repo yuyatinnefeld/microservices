@@ -5,7 +5,7 @@ stages:
   - deploy
 
 trivy:
-  stage: test_image
+  stage: test_image 
   script:
     - curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b trivy v0.18.3
     - ./trivy/trivy filesystem  $WORKING_DIR/details/Dockerfile
@@ -51,6 +51,13 @@ kubebench:
     - docker run -i aquasec/kube-bench run $WORKING_DIR/simple.yaml
   variables:
     WORKING_DIR: cicd/gitlab/depl
+
+# TODO: implement kubetest
+kubetest:
+  stage: test_k8s
+  image: docker
+  script:
+    - echo 'kubetest...'
 
 deploy_k8s_apps:
   stage: deploy
